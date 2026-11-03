@@ -12,7 +12,7 @@
   --card-bg-active: rgba(255, 255, 255, 0.11);
   --text-primary:   #f5f5f7;
   --text-secondary: #9a9aa2;
-  --edge:           clamp(16px, 4.8vw, 24px);
+  --edge:           clamp(12px, 3.8vw, 18px);
     --gap-block:      clamp(10px, 1.8vh, 16px);
   --radius-card:    clamp(18px, 4.5vw, 24px);
   --safe-top:       env(safe-area-inset-top, 0px);
@@ -205,7 +205,7 @@ button:focus-visible {
   padding:
     0
     calc(var(--edge) + var(--safe-right))
-    calc(var(--safe-bottom) + clamp(16px, 3vh, 28px))
+    calc(var(--safe-bottom))
     calc(var(--edge) + var(--safe-left));
 }
 
