@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0e0e13" />
     <link rel="manifest" href="manifest.json" />
   <link rel="icon" type="image/svg+xml" href="icon.svg" />
@@ -143,6 +143,50 @@
     </div>
 
   </main>
+
+    <!-- ===== BOTTOM SHEET: Premium ===== -->
+  <div class="sheet-overlay" id="premiumOverlay" hidden></div>
+
+  <section class="sheet" id="premiumSheet" role="dialog" aria-modal="true"
+           aria-labelledby="premiumTitle" hidden>
+    <div class="sheet__handle" id="premiumHandle">
+      <span class="sheet__grabber"></span>
+    </div>
+
+    <div class="sheet__body">
+      <div class="sheet__hero">
+        <svg class="sheet__diamond" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 3h12l3 6-9 12L3 9l3-6z"></path>
+          <path d="M3 9h18"></path>
+          <path d="M9 3l3 6 3-6"></path>
+          <path d="M12 21L9 9"></path>
+          <path d="M12 21l3-12"></path>
+        </svg>
+      </div>
+
+      <h2 class="sheet__title" id="premiumTitle">LumaAI Premium</h2>
+      <p class="sheet__subtitle">Unlock the full power of your assistant.</p>
+
+      <ul class="sheet__list">
+        <li class="sheet__item">
+          <span class="sheet__check">✓</span> Unlimited image generation
+        </li>
+        <li class="sheet__item">
+          <span class="sheet__check">✓</span> Priority voice assistant
+        </li>
+        <li class="sheet__item">
+          <span class="sheet__check">✓</span> Advanced document scanning
+        </li>
+        <li class="sheet__item">
+          <span class="sheet__check">✓</span> Faster translations
+        </li>
+      </ul>
+
+      <button class="primary-btn" id="premiumSubscribe">Continue</button>
+      <button class="sheet__ghost" id="premiumClose">Maybe later</button>
+    </div>
+  </section>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
