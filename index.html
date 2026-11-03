@@ -188,6 +188,151 @@
     </div>
   </section>
 
+    <!-- ===== BOTTOM SHEET: Settings ===== -->
+  <div class="sheet-overlay" id="settingsOverlay" hidden></div>
+
+  <section class="sheet" id="settingsSheet" role="dialog" aria-modal="true"
+           aria-labelledby="settingsTitle" hidden>
+    <div class="sheet__handle" id="settingsHandle">
+      <span class="sheet__grabber"></span>
+    </div>
+
+    <div class="sheet__body">
+      <h2 class="sheet__title" id="settingsTitle">Settings</h2>
+
+      <div class="settings-list">
+
+        <div class="settings-row">
+          <span class="settings-row__label">Notifications</span>
+          <label class="settings-toggle">
+            <input type="checkbox" checked />
+            <span class="settings-toggle__slider"></span>
+          </label>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-row__label">Haptic Feedback</span>
+          <label class="settings-toggle">
+            <input type="checkbox" checked />
+            <span class="settings-toggle__slider"></span>
+          </label>
+        </div>
+
+        <button class="settings-row settings-row--button" data-setting="Language">
+          <span class="settings-row__label">Language</span>
+          <span class="settings-row__value">
+            English
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 15 12 9 18"></polyline>
+            </svg>
+          </span>
+        </button>
+
+        <button class="settings-row settings-row--button" data-setting="Theme">
+          <span class="settings-row__label">Theme</span>
+          <span class="settings-row__value">
+            Dark
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 15 12 9 18"></polyline>
+            </svg>
+          </span>
+        </button>
+
+        <button class="settings-row settings-row--button" data-setting="Privacy Policy">
+          <span class="settings-row__label">Privacy Policy</span>
+          <span class="settings-row__value">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 15 12 9 18"></polyline>
+            </svg>
+          </span>
+        </button>
+
+        <button class="settings-row settings-row--button" data-setting="About LumaAI">
+          <span class="settings-row__label">About LumaAI</span>
+          <span class="settings-row__value">
+            v1.0
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 15 12 9 18"></polyline>
+            </svg>
+          </span>
+        </button>
+
+      </div>
+    </div>
+  </section>
+
+    <!-- ===== BOTTOM SHEET: Chat History ===== -->
+  <div class="sheet-overlay" id="historyOverlay" hidden></div>
+
+  <section class="sheet" id="historySheet" role="dialog" aria-modal="true"
+           aria-labelledby="historyTitle" hidden>
+    <div class="sheet__handle" id="historyHandle">
+      <span class="sheet__grabber"></span>
+    </div>
+
+    <div class="sheet__body">
+
+      <div class="history-head">
+        <button class="icon-btn icon-btn--dark" id="historySettingsBtn" aria-label="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4"  y1="21" x2="4"  y2="14"></line>
+            <line x1="4"  y1="10" x2="4"  y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8"  x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1"  y1="14" x2="7"  y2="14"></line>
+            <line x1="9"  y1="8"  x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+        </button>
+
+        <h2 class="sheet__title history-title" id="historyTitle">Chats</h2>
+
+        <button class="icon-btn icon-btn--dark" id="historyNewBtn" aria-label="New chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5"  y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+
+      <ul class="history-list">
+        <li class="history-item">
+          <span class="history-item__title">Trip to Lisbon</span>
+          <span class="history-item__meta">2 min ago</span>
+        </li>
+        <li class="history-item">
+          <span class="history-item__title">Fix CSS grid issue</span>
+          <span class="history-item__meta">Yesterday</span>
+        </li>
+        <li class="history-item">
+          <span class="history-item__title">Translate menu to Italian</span>
+          <span class="history-item__meta">Yesterday</span>
+        </li>
+        <li class="history-item">
+          <span class="history-item__title">Scan passport</span>
+          <span class="history-item__meta">3 days ago</span>
+        </li>
+        <li class="history-item">
+          <span class="history-item__title">Voice note for Alex</span>
+          <span class="history-item__meta">Last week</span>
+        </li>
+        <li class="history-item">
+          <span class="history-item__title">Logo ideas for LumaAI</span>
+          <span class="history-item__meta">Last week</span>
+        </li>
+      </ul>
+
+    </div>
+  </section>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="script.js"></script>

@@ -67,6 +67,24 @@ body {
   overflow: hidden;
 }
 
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+button:focus {
+  outline: none;
+}
+
+button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
 /* ============ ФОТО-СЛОЙ ============ */
 .app__photo {
   position: absolute;
@@ -112,8 +130,8 @@ body {
     180deg,
     rgba(14, 14, 19, 0)    0%,
     rgba(14, 14, 19, 0.55) 10%,
-    rgba(14, 14, 19, 0.85) 25%,
-    rgba(14, 14, 19, 0.97) 45%,
+    rgba(14, 14, 19, 1) 25%,
+    rgba(14, 14, 19, 1) 45%,
     #0e0e13                65%,
     #0e0e13                100%
   );
@@ -281,8 +299,8 @@ padding: clamp(14px, 3vw, 18px);
   justify-content: center;
   gap: 10px;
   width: 100%;
-  height: clamp(54px, 7.5vh, 62px);
-  border-radius: clamp(16px, 4vw, 20px);
+  height: clamp(54px, 7.5vh, 60px);
+  border-radius: 16px;
   color: #0e0e13;
   font-size: clamp(16px, 4.4vw, 17px);
   font-weight: 600;
@@ -506,4 +524,177 @@ padding: clamp(14px, 3vw, 18px);
 .sheet__ghost:active {
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.05);
+}
+
+/* ============ SETTINGS LIST ============ */
+.settings-list {
+  margin-top: 22px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 18px;
+  text-align: left;
+  color: var(--text-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
+.settings-row--button {
+  cursor: pointer;
+}
+
+.settings-row--button:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.settings-row__label {
+  font-size: clamp(14.5px, 4vw, 15.5px);
+  font-weight: 500;
+}
+
+.settings-row__value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(13.5px, 3.7vw, 14.5px);
+  color: var(--text-secondary);
+}
+
+.settings-row__value svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ---------- iOS-style toggle ---------- */
+.settings-toggle {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.settings-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.settings-toggle__slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background 0.22s ease;
+}
+
+.settings-toggle__slider::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.22s ease;
+}
+
+.settings-toggle input:checked + .settings-toggle__slider {
+  background: #34c759;
+}
+
+.settings-toggle input:checked + .settings-toggle__slider::before {
+  transform: translateX(20px);
+}
+
+/* ============ CHAT HISTORY ============ */
+.history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 6px 0 18px;
+}
+
+.history-title {
+  margin: 0;
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+/* тёмная версия круглой кнопки — для светлой панели модалки */
+.icon-btn--dark {
+  width: 40px;
+  height: 40px;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.icon-btn--dark svg {
+  width: 19px;
+  height: 19px;
+}
+
+.icon-btn--dark:active {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ---------- Список чатов ---------- */
+.history-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease;
+  cursor: pointer;
+}
+
+.history-item:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.history-item__title {
+  font-size: clamp(14.5px, 4vw, 15.5px);
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-item__meta {
+  flex-shrink: 0;
+  font-size: clamp(12.5px, 3.4vw, 13.5px);
+  color: var(--text-secondary);
 }

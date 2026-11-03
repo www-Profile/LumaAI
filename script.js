@@ -31,10 +31,6 @@
     });
   }
 
-  /* Верхние кнопки */
-  bind(document.getElementById("historyBtn"), "Chat history — coming soon");
-  bind(document.getElementById("settingsBtn"), "Settings — coming soon");
-
   /* Сетка 2×2 */
   document.querySelectorAll(".action-card").forEach(function (card) {
     const action = card.dataset.action || "Action";
@@ -83,92 +79,157 @@
     { passive: false }
   );
 
-  /* ============ BOTTOM SHEET ============ */
-  const premiumSheet   = document.getElementById("premiumSheet");
-  const premiumOverlay = document.getElementById("premiumOverlay");
-  const premiumHandle  = document.getElementById("premiumHandle");
-  const premiumClose   = document.getElementById("premiumClose");
-  const premiumSub     = document.getElementById("premiumSubscribe");
+  /* ============ BOTTOM SHEETS (shared) ============ */
+  function createSheet(sheetEl, overlayEl, handleEl) {
+    if (!sheetEl || !overlayEl || !handleEl) return null;
 
-  let sheetOpen = false;
-  let startY = 0;
-  let currentY = 0;
-  let dragging = false;
+    let isOpen = false;
+    let startY = 0;
+    let currentY = 0;
+    let dragging = false;
 
-  function openSheet() {
-    if (!premiumSheet || sheetOpen) return;
-    sheetOpen = true;
-    premiumOverlay.hidden = false;
-    premiumSheet.hidden = false;
+    function open() {
+      if (isOpen) return;
+      isOpen = true;
+      overlayEl.hidden = false;
+      sheetEl.hidden = false;
+      void sheetEl.offsetHeight;
+      requestAnimationFrame(function () {
+        overlayEl.classList.add("is-open");
+        sheetEl.classList.add("is-open");
+      });
+      haptic(8);
+    }
 
-    /* форсируем рефлоу, чтобы transition сработал */
-    void premiumSheet.offsetHeight;
+    function close() {
+      if (!isOpen) return;
+      isOpen = false;
+      overlayEl.classList.remove("is-open");
+      sheetEl.classList.remove("is-open");
+      sheetEl.style.transform = "";
+      setTimeout(function () {
+        sheetEl.hidden = true;
+        overlayEl.hidden = true;
+      }, 380);
+      haptic(6);
+    }
 
-    requestAnimationFrame(function () {
-      premiumOverlay.classList.add("is-open");
-      premiumSheet.classList.add("is-open");
-    });
+    overlayEl.addEventListener("click", close);
 
-    haptic(8);
-  }
-
-  function closeSheet() {
-    if (!premiumSheet || !sheetOpen) return;
-    sheetOpen = false;
-
-    premiumOverlay.classList.remove("is-open");
-    premiumSheet.classList.remove("is-open");
-    premiumSheet.style.transform = "";
-
-    setTimeout(function () {
-      premiumSheet.hidden = true;
-      premiumOverlay.hidden = true;
-    }, 380);
-
-    haptic(6);
-  }
-
-  /* кнопка Try Premium открывает модалку */
-  if (premiumBtn) {
-    premiumBtn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      openSheet();
-    });
-  }
-
-  /* клик по фону / Maybe later — закрыть */
-  if (premiumOverlay)  premiumOverlay.addEventListener("click", closeSheet);
-  if (premiumClose)    premiumClose.addEventListener("click", closeSheet);
-
-  /* ---------- Свайп вниз для закрытия ---------- */
-  if (premiumHandle && premiumSheet) {
-    premiumHandle.addEventListener("pointerdown", function (e) {
+    handleEl.addEventListener("pointerdown", function (e) {
       dragging = true;
       startY = e.clientY;
       currentY = 0;
-      premiumSheet.style.transition = "none";
-      premiumHandle.setPointerCapture(e.pointerId);
+      sheetEl.style.transition = "none";
+      handleEl.setPointerCapture(e.pointerId);
     });
 
-    premiumHandle.addEventListener("pointermove", function (e) {
+    handleEl.addEventListener("pointermove", function (e) {
       if (!dragging) return;
       currentY = Math.max(0, e.clientY - startY);
-      premiumSheet.style.transform = "translateY(" + currentY + "px)";
+      sheetEl.style.transform = "translateY(" + currentY + "px)";
     });
 
     function endDrag() {
       if (!dragging) return;
       dragging = false;
-      premiumSheet.style.transition = "";
-      if (currentY > 100) {
-        closeSheet();
-      } else {
-        premiumSheet.style.transform = "";
-      }
+      sheetEl.style.transition = "";
+      if (currentY > 100) close();
+      else sheetEl.style.transform = "";
       currentY = 0;
     }
 
-    premiumHandle.addEventListener("pointerup", endDrag);
-    premiumHandle.addEventListener("pointercancel", endDrag);
+    handleEl.addEventListener("pointerup", endDrag);
+    handleEl.addEventListener("pointercancel", endDrag);
+
+    return { open: open, close: close };
   }
+
+  /* ---------- Premium ---------- */
+  const premiumBtn     = document.getElementById("premiumBtn");
+  const premiumClose   = document.getElementById("premiumClose");
+  const premiumSub     = document.getElementById("premiumSubscribe");
+
+  const premiumAPI = createSheet(
+    document.getElementById("premiumSheet"),
+    document.getElementById("premiumOverlay"),
+    document.getElementById("premiumHandle")
+  );
+
+  if (premiumBtn && premiumAPI) {
+    premiumBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      premiumAPI.open();
+    });
+  }
+  if (premiumClose && premiumAPI) {
+    premiumClose.addEventListener("click", premiumAPI.close);
+  }
+  if (premiumSub) {
+    premiumSub.addEventListener("click", function () {
+      showToast("Premium — coming soon");
+    });
+  }
+
+  /* ---------- Settings ---------- */
+  const settingsBtn = document.getElementById("settingsBtn");
+
+  const settingsAPI = createSheet(
+    document.getElementById("settingsSheet"),
+    document.getElementById("settingsOverlay"),
+    document.getElementById("settingsHandle")
+  );
+
+  if (settingsBtn && settingsAPI) {
+    settingsBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      settingsAPI.open();
+    });
+  }
+
+  /* Клик по строкам настроек — пока заглушка */
+  document.querySelectorAll(".settings-row--button").forEach(function (row) {
+    row.addEventListener("click", function () {
+      showToast(row.dataset.setting + " — coming soon");
+    });
+  });
+
+    /* ---------- Chat History ---------- */
+  const historyBtn = document.getElementById("historyBtn");
+
+  const historyAPI = createSheet(
+    document.getElementById("historySheet"),
+    document.getElementById("historyOverlay"),
+    document.getElementById("historyHandle")
+  );
+
+  if (historyBtn && historyAPI) {
+    historyBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      historyAPI.open();
+    });
+  }
+
+  /* Кнопки внутри истории — пока не рабочие */
+  const historySettingsBtn = document.getElementById("historySettingsBtn");
+  const historyNewBtn      = document.getElementById("historyNewBtn");
+
+  if (historySettingsBtn) {
+    historySettingsBtn.addEventListener("click", function (e) {
+      e.stopPropagation();       /* чтобы не закрывать модалку по клику на фон */
+    });
+  }
+
+  if (historyNewBtn) {
+    historyNewBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+    });
+  }
+
+  /* Клик по чату — заглушка */
+  document.querySelectorAll(".history-item").forEach(function (item) {
+    item.addEventListener("click", function () {
+      showToast(item.querySelector(".history-item__title").textContent + " — coming soon");
+    });
+  });
 })();
