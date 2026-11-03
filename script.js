@@ -344,10 +344,10 @@
   const newChatBtn    = document.getElementById("newChatBtn");
 
   const SKILL_MAP = {
-    "Create Image":          { tag: "#Image",       emoji: "🎨", prompt: "What image should I create?" },
-    "Voice Assistant":       { tag: "#Voice",       emoji: "🎤", prompt: "Tap and I'll listen…" },
-    "Scan Document":         { tag: "#Document",    emoji: "📄", prompt: "Scan a document to get started" },
-    "Help with Translation": { tag: "#Translation", emoji: "🌐", prompt: "What would you like to translate?" }
+    "Create Image":          { tag: "#Image",       emoji: "📸", prompt: "What image should I create?" },
+    "Voice Assistant":       { tag: "#Voice",       emoji: "🎙️", prompt: "Tap and I'll listen…" },
+    "Scan Document":         { tag: "#Document",    emoji: "📚", prompt: "Scan a document to get started" },
+    "Help with Translation": { tag: "#Translation", emoji: "🌎", prompt: "What would you like to translate?" }
   };
 
   const DEFAULT_EMPTY = { emoji: "👋", prompt: "How can I help you today?" };
