@@ -1,0 +1,343 @@
+/* ============ BASE ============ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-deep:        #0e0e13;
+  --card-bg:        rgba(255, 255, 255, 0.06);
+  --card-bg-active: rgba(255, 255, 255, 0.11);
+  --text-primary:   #f5f5f7;
+  --text-secondary: #9a9aa2;
+  --edge:           clamp(16px, 4.8vw, 24px);
+    --gap-block:      clamp(10px, 1.8vh, 16px);
+  --radius-card:    clamp(18px, 4.5vw, 24px);
+  --safe-top:       env(safe-area-inset-top, 0px);
+  --safe-bottom:    env(safe-area-inset-bottom, 0px);
+  --safe-left:      env(safe-area-inset-left, 0px);
+  --safe-right:     env(safe-area-inset-right, 0px);
+}
+
+html, body { height: 100%; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+               "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ============ APP ============ */
+.app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg-deep);
+  overflow: hidden;
+}
+
+/* ============ ФОТО-СЛОЙ ============ */
+.app__photo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72dvh;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--safe-top) + 52px) var(--edge) 0;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    #6b6b73 0%,
+    #4a4a52 18%,
+    #2b2b32 42%,
+    #18181e 68%,
+    var(--bg-deep) 100%
+  );
+  pointer-events: none;
+}
+
+.app__photo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 26px 52px rgba(0, 0, 0, 0.55));
+  opacity: 0.96;
+}
+
+/* ============ ГРАДИЕНТ-ЗАНАВЕС ============ */
+.app__fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 72dvh;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(14, 14, 19, 0)    0%,
+    rgba(14, 14, 19, 0.55) 10%,
+    rgba(14, 14, 19, 0.85) 25%,
+    rgba(14, 14, 19, 0.97) 45%,
+    #0e0e13                65%,
+    #0e0e13                100%
+  );
+}
+
+/* ============ ВЕРХНЯЯ ПАНЕЛЬ ============ */
+.top-bar {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding:
+    calc(var(--safe-top) + clamp(12px, 2.5vh, 20px))
+    calc(var(--edge) + var(--safe-right))
+    0
+    calc(var(--edge) + var(--safe-left));
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.icon-btn svg { width: 21px; height: 21px; }
+
+.pill-btn {
+  height: 44px;
+  padding: 0 clamp(16px, 5vw, 22px);
+  border-radius: 22px;
+  color: #fff;
+  font-size: clamp(14px, 3.8vw, 15px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.icon-btn:active,
+.pill-btn:active {
+  transform: scale(0.93);
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* ============ КОНТЕНТ ============ */
+.content {
+  position: relative;
+  z-index: 2;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-block);
+  padding:
+    0
+    calc(var(--edge) + var(--safe-right))
+    calc(var(--safe-bottom) + clamp(16px, 3vh, 28px))
+    calc(var(--edge) + var(--safe-left));
+}
+
+/* ---------- Приветствие ---------- */
+.greeting {
+  font-size: clamp(22px, 5.8vw, 28px);
+  line-height: 1.22;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* ---------- Сетка 2×2 ---------- */
+.actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(10px, 2.5vw, 14px);
+}
+
+.action-card {
+  position: relative;                 /* для стрелки */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(16px, 3vh, 24px);
+  min-height: clamp(92px, 13vh, 118px);
+padding: clamp(14px, 3vw, 18px);
+  padding-right: clamp(48px, 11vw, 58px);
+  text-align: left;
+  color: var(--text-primary);
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-card);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.action-card:active {
+  transform: scale(0.96);
+  background: var(--card-bg-active);
+}
+
+.action-card__icon {
+  width: clamp(22px, 6vw, 26px);
+  height: clamp(22px, 6vw, 26px);
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.action-card__label {
+  font-size: clamp(13.5px, 3.7vw, 15px);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Стрелочка: полоса во всю высоту справа, по центру ---------- */
+.action-card__arrow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: clamp(34px, 8vw, 42px);
+  display: flex;
+  align-items: center;      /* центр по вертикали */
+  justify-content: center;
+  color: var(--text-secondary);
+  border-radius: 0 var(--radius-card) var(--radius-card) 0;
+  transition: color 0.18s ease, background 0.18s ease;
+}
+
+.action-card__arrow svg {
+  width: clamp(13px, 3.6vw, 15px);
+  height: clamp(13px, 3.6vw, 15px);
+  transition: transform 0.18s ease;
+}
+
+.action-card:active .action-card__arrow {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.action-card:active .action-card__arrow svg {
+  transform: translateX(2px);
+}
+
+/* ---------- Главная кнопка ---------- */
+.primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: clamp(54px, 7.5vh, 62px);
+  border-radius: clamp(16px, 4vw, 20px);
+  color: #0e0e13;
+  font-size: clamp(16px, 4.4vw, 17px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  background: #f5f5f7;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.primary-btn:active {
+  transform: scale(0.975);
+  opacity: 0.9;
+}
+
+.primary-btn__icon {
+  width: clamp(15px, 4vw, 17px);
+  height: clamp(15px, 4vw, 17px);
+  flex-shrink: 0;
+}
+
+.primary-btn__icon--left {
+  opacity: 0.9;
+}
+
+.primary-btn__icon--right {
+  opacity: 0.7;
+}
+
+/* ============ TOAST ============ */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--safe-bottom) + clamp(20px, 4vh, 32px));
+  transform: translate(-50%, 24px);
+  z-index: 50;
+  max-width: calc(100% - 48px);
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: rgba(245, 245, 247, 0.95);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: #0e0e13;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ============ ТОНКИЕ ЭКРАНЫ ============ */
+@media (max-height: 640px) {
+  .app__photo { height: 68dvh; }
+  .app__fade  { height: 78dvh; }
+  .greeting   { font-size: clamp(20px, 5.4vw, 24px); }
+  .action-card { min-height: clamp(84px, 12vh, 100px); gap: 14px; }
+}
+
+/* ============ ОЧЕНЬ УЗКИЕ ЭКРАНЫ ============ */
+@media (max-width: 340px) {
+  .pill-btn { padding: 0 14px; font-size: 13.5px; }
+  .icon-btn { width: 40px; height: 40px; }
+  .icon-btn svg { width: 19px; height: 19px; }
+  .action-card__label { font-size: 13px; }
+  .action-card { padding-right: 44px; }
+  .action-card__arrow { width: 32px; }
+  .action-card__arrow svg { width: 11px; height: 11px; }
+}
