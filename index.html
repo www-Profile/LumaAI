@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
   <meta name="theme-color" content="#0e0e13" />
+<meta name="color-scheme" content="dark light" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" type="image/svg+xml" href="icon.svg" />
   <link rel="apple-touch-icon" href="icon.svg" />
@@ -420,9 +421,9 @@
       <div class="settings-list">
 
         <div class="settings-row">
-          <span class="settings-row__label">Notifications</span>
+          <span class="settings-row__label">Dark Mode</span>
           <label class="settings-toggle">
-            <input type="checkbox" checked />
+            <input type="checkbox" id="settingDarkMode" checked />
             <span class="settings-toggle__slider"></span>
           </label>
         </div>
@@ -430,9 +431,18 @@
         <div class="settings-row">
           <span class="settings-row__label">Haptic Feedback</span>
           <label class="settings-toggle">
-            <input type="checkbox" checked />
+            <input type="checkbox" id="settingHaptics" checked />
             <span class="settings-toggle__slider"></span>
           </label>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-row__label">Font Size</span>
+          <div class="font-size-picker" id="fontSizePicker">
+            <button class="font-size-btn" data-size="s" type="button">S</button>
+            <button class="font-size-btn is-active" data-size="m" type="button">M</button>
+            <button class="font-size-btn" data-size="l" type="button">L</button>
+          </div>
         </div>
 
         <div class="settings-row settings-row--color">
@@ -445,17 +455,6 @@
             <button class="accent-dot" data-color="#30d158" style="--dot:#30d158" aria-label="Green"></button>
           </div>
         </div>
-
-        <button class="settings-row settings-row--button" data-setting="Theme">
-          <span class="settings-row__label">Theme</span>
-          <span class="settings-row__value">
-            Dark
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 6 15 12 9 18"></polyline>
-            </svg>
-          </span>
-        </button>
 
         <button class="settings-row settings-row--button" data-setting="Privacy Policy">
           <span class="settings-row__label">Privacy Policy</span>

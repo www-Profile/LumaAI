@@ -36,6 +36,61 @@
     vv.addEventListener("scroll", update);
   })();
 
+    /* ============ SETTINGS ============ */
+  const SETTINGS_KEY = "luma_settings";
+
+  const DEFAULT_SETTINGS = {
+    darkMode: true,
+    haptics: true,
+    fontSize: "m",
+    accent: "#0a84ff"
+  };
+
+  let settings = Object.assign({}, DEFAULT_SETTINGS);
+
+  try {
+    const rawSettings = localStorage.getItem(SETTINGS_KEY);
+    if (rawSettings) settings = Object.assign({}, DEFAULT_SETTINGS, JSON.parse(rawSettings));
+  } catch (e) {}
+
+  function saveSettings() {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {}
+  }
+
+  function applySettings() {
+
+        /* Theme color для тулбара Safari/Chrome */
+    let metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.setAttribute("content", settings.darkMode ? "#0e0e13" : "#f2f2f7");
+    }
+    /* Тема */
+    document.documentElement.classList.toggle("theme-light", !settings.darkMode);
+
+    /* Размер шрифта */
+    document.documentElement.setAttribute("data-font-size", settings.fontSize);
+
+    /* Акцент */
+    document.documentElement.style.setProperty("--accent", settings.accent);
+
+    /* Синхронизация UI */
+    const darkToggle = document.getElementById("settingDarkMode");
+    if (darkToggle) darkToggle.checked = !!settings.darkMode;
+
+    const hapticsToggle = document.getElementById("settingHaptics");
+    if (hapticsToggle) hapticsToggle.checked = !!settings.haptics;
+
+    document.querySelectorAll(".font-size-btn").forEach(function (btn) {
+      btn.classList.toggle("is-active", btn.dataset.size === settings.fontSize);
+    });
+
+    document.querySelectorAll(".accent-dot").forEach(function (dot) {
+      dot.classList.toggle("is-active", dot.dataset.color === settings.accent);
+    });
+  }
+
+  applySettings();
+
   const toastEl = document.getElementById("toast");
   let toastTimer = null;
 
@@ -50,6 +105,7 @@
   }
 
   function haptic(ms) {
+    if (!settings.haptics) return;
     if (navigator.vibrate) navigator.vibrate(ms || 10);
   }
 
@@ -761,29 +817,65 @@
     return AI_REPLIES[Math.floor(Math.random() * AI_REPLIES.length)];
   }
 
-  function addAIMessage(text) {
-    if (!activeChat) return;
-    activeChat.messages.push({
-      role: "assistant",
-      text: text,
-      at: Date.now()
-    });
-    activeChat.updatedAt = Date.now();
-    commitActiveChat();
-    renderActiveMessages();
+  function addTypingIndicator() {
+    const b = document.createElement("div");
+    b.className = "chat-bubble chat-bubble--assistant chat-bubble--typing";
+    b.innerHTML = "<span></span><span></span><span></span>";
+    chatMessages.appendChild(b);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return b;
+  }
+
+  function streamAIMessage(text, typingEl) {
+    if (typingEl && typingEl.isConnected) typingEl.remove();
+    const chatId = activeChat ? activeChat.id : null;
+
+    const b = document.createElement("div");
+    b.className = "chat-bubble chat-bubble--assistant";
+    const textEl = document.createElement("div");
+    textEl.className = "chat-bubble__text is-streaming";
+    b.appendChild(textEl);
+    chatMessages.appendChild(b);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    let i = 0;
+    const speed = 16;
+    const interval = setInterval(function () {
+      if (!b.isConnected) { clearInterval(interval); return; }
+      if (!activeChat || activeChat.id !== chatId) { clearInterval(interval); return; }
+
+      i++;
+      textEl.textContent = text.slice(0, i);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      if (i >= text.length) {
+        clearInterval(interval);
+        textEl.classList.remove("is-streaming");
+        activeChat.messages.push({ role: "assistant", text: text, at: Date.now() });
+        activeChat.updatedAt = Date.now();
+        commitActiveChat();
+      }
+    }, speed);
   }
 
   function scheduleAIReply(userText) {
     if (!activeChat) return;
     const chatId = activeChat.id;
-    const delay = 700 + Math.random() * 600;
 
     setTimeout(function () {
       if (!activeChat || activeChat.id !== chatId) return;
       if (!chatScreen.classList.contains("is-open")) return;
-      addAIMessage(pickAIReply(userText));
-      haptic(4);
-    }, delay);
+
+      const typingEl = addTypingIndicator();
+      const reply = pickAIReply(userText);
+
+      setTimeout(function () {
+        if (!activeChat || activeChat.id !== chatId) return;
+        if (!typingEl.isConnected) return;
+        streamAIMessage(reply, typingEl);
+        haptic(4);
+      }, 700 + Math.random() * 600);
+    }, 350 + Math.random() * 350);
   }
 
   function openChatScreen(skillInfo) {
@@ -853,8 +945,29 @@
     card.addEventListener("click", function () {
       const info = SKILL_MAP[card.dataset.action] || null;
       clearPendingAndInput();
-      createChat(info);
-      openChatScreen(info);
+
+      /* View Transitions — если браузер поддерживает */
+      if (typeof document.startViewTransition === "function") {
+        /* 1) Помечаем карточку именем morph — её заснимут */
+        card.style.viewTransitionName = "morph";
+
+        const t = document.startViewTransition(function () {
+          /* 2) Перед снимком нового состояния — снимаем имя с карточки
+                и вешаем на чат-экран, чтобы он прилетел на её место */
+          card.style.viewTransitionName = "";
+          chatScreen.style.viewTransitionName = "morph";
+
+          createChat(info);
+          openChatScreen(info);
+        });
+
+        t.finished.finally(function () {
+          chatScreen.style.viewTransitionName = "";
+        });
+      } else {
+        createChat(info);
+        openChatScreen(info);
+      }
     });
   });
 
@@ -1058,7 +1171,7 @@
       btn.innerHTML =
         '<span class="skill-item__tag">' + skill.tag + '</span>' +
         '<span class="skill-item__desc">' + skill.prompt + '</span>';
-      btn.addEventListener("click", function () { applySkill(skill.tag); });
+      btn.addEventListener("click", function () { applySkill(skill.tag, btn); });
       skillList.appendChild(btn);
     });
 
@@ -1072,7 +1185,7 @@
     openPopup("skillPicker");
   }
 
-  function applySkill(tag) {
+  function applySkill(tag, sourceEl) {
     if (!chatInput) return;
     const val = chatInput.value;
     const cursor = chatInput.selectionStart || val.length;
@@ -1091,6 +1204,35 @@
     chatInput.style.height = "auto";
     chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + "px";
     closeAllPopups();
+
+    /* FLIP: летим из пикера в строку чипов */
+    if (sourceEl) {
+      requestAnimationFrame(function () {
+        const chip =
+          document.querySelector("#chatSkillsVoice .chat-skill-tag") ||
+          document.querySelector("#chatSkills .chat-skill-tag");
+        if (chip) flipChip(sourceEl, chip);
+      });
+    }
+  }
+
+  function flipChip(fromEl, toEl) {
+    const first = fromEl.getBoundingClientRect();
+    const last  = toEl.getBoundingClientRect();
+    if (!first.width || !last.width) return;
+
+    const dx = first.left - last.left;
+    const dy = first.top  - last.top;
+    const sx = first.width / last.width;
+    const sy = first.height / last.height;
+
+    toEl.animate([
+      { transform: "translate(" + dx + "px," + dy + "px) scale(" + sx + "," + sy + ")", opacity: 0.4 },
+      { transform: "translate(0,0) scale(1)", opacity: 1 }
+    ], {
+      duration: 420,
+      easing: "cubic-bezier(0.22, 1.4, 0.36, 1)"
+    });
   }
 
   /* ---------- Detecting # on input ---------- */
@@ -1126,7 +1268,35 @@
     closeAllPopups();
   });
 
-  /* ============ ACCENT COLOR PICKER ============ */
+  /* ============ SETTINGS WIRING ============ */
+  const settingDarkMode = document.getElementById("settingDarkMode");
+  if (settingDarkMode) {
+    settingDarkMode.addEventListener("change", function () {
+      settings.darkMode = settingDarkMode.checked;
+      saveSettings();
+      applySettings();
+    });
+  }
+
+  const settingHaptics = document.getElementById("settingHaptics");
+  if (settingHaptics) {
+    settingHaptics.addEventListener("change", function () {
+      settings.haptics = settingHaptics.checked;
+      saveSettings();
+      applySettings();
+      haptic(6);   /* почувствовать переключение */
+    });
+  }
+
+  document.querySelectorAll(".font-size-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      settings.fontSize = btn.dataset.size || "m";
+      saveSettings();
+      applySettings();
+      haptic(4);
+    });
+  });
+
   const accentPicker = document.getElementById("accentPicker");
   if (accentPicker) {
     const dots = accentPicker.querySelectorAll(".accent-dot");
@@ -1134,9 +1304,9 @@
       dot.addEventListener("click", function () {
         const color = dot.dataset.color;
         if (!color) return;
-        document.documentElement.style.setProperty("--accent", color);
-        dots.forEach(function (d) { d.classList.remove("is-active"); });
-        dot.classList.add("is-active");
+        settings.accent = color;
+        saveSettings();
+        applySettings();
         haptic(6);
       });
     });
