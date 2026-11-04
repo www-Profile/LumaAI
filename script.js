@@ -164,9 +164,33 @@
   if (premiumClose && premiumAPI) {
     premiumClose.addEventListener("click", premiumAPI.close);
   }
+  /* ---------- Premium: выбор плана ---------- */
+  const premiumPlans = document.getElementById("premiumPlans");
+  let selectedPlan = "boss";
+
+  function syncPremiumButton() {
+    if (!premiumSub) return;
+    const label = selectedPlan === "pro" ? "Pro" : "Boss";
+    premiumSub.textContent = "Continue with " + label;
+  }
+
+  if (premiumPlans) {
+    premiumPlans.addEventListener("click", function (e) {
+      const card = e.target.closest(".premium-plan");
+      if (!card) return;
+      selectedPlan = card.dataset.plan || "boss";
+      premiumPlans.querySelectorAll(".premium-plan").forEach(function (el) {
+        el.classList.toggle("is-active", el === card);
+      });
+      syncPremiumButton();
+      haptic(4);
+    });
+  }
+
   if (premiumSub) {
     premiumSub.addEventListener("click", function () {
-      showToast("Premium — coming soon");
+      const label = selectedPlan === "pro" ? "Pro" : "Boss";
+      showToast("Subscribed to " + label + " — coming soon");
     });
   }
 
@@ -451,6 +475,9 @@
     activeChat.messages.forEach(function (m) {
       const b = document.createElement("div");
       b.className = "chat-bubble";
+      if (m.role === "assistant" && !m.type && m.text) {
+        b.classList.add("chat-bubble--assistant");
+      }
 
       if (m.type === "image-gen") {
         /* --- Правая сторона: сообщение пользователя --- */
@@ -705,6 +732,60 @@
     renderHistory();
   }
 
+    /* ============ AI FAKE REPLY ============ */
+  const AI_REPLIES = [
+    "Got it. Tell me more.",
+    "Interesting. Could you elaborate?",
+    "I'm with you. What's next?",
+    "That makes sense.",
+    "Noted. Anything else on your mind?"
+  ];
+
+  function pickAIReply(text) {
+    const t = (text || "").toLowerCase().trim();
+    if (/^(hi|hello|hey|привет|здравствуй|прив)\b/.test(t)) {
+      return "Hey! Great to see you. What are we working on?";
+    }
+    if (/\?$/.test(t)) {
+      return "Good question. Let me think about it…";
+    }
+    if (t.includes("help") || t.includes("помог")) {
+      return "Of course. What do you need help with?";
+    }
+    if (t.includes("thank") || t.includes("спасиб")) {
+      return "You're welcome!";
+    }
+    if (t.includes("how are you")) {
+      return "Running at full capacity. Thanks for asking — how can I help?";
+    }
+    return AI_REPLIES[Math.floor(Math.random() * AI_REPLIES.length)];
+  }
+
+  function addAIMessage(text) {
+    if (!activeChat) return;
+    activeChat.messages.push({
+      role: "assistant",
+      text: text,
+      at: Date.now()
+    });
+    activeChat.updatedAt = Date.now();
+    commitActiveChat();
+    renderActiveMessages();
+  }
+
+  function scheduleAIReply(userText) {
+    if (!activeChat) return;
+    const chatId = activeChat.id;
+    const delay = 700 + Math.random() * 600;
+
+    setTimeout(function () {
+      if (!activeChat || activeChat.id !== chatId) return;
+      if (!chatScreen.classList.contains("is-open")) return;
+      addAIMessage(pickAIReply(userText));
+      haptic(4);
+    }, delay);
+  }
+
   function openChatScreen(skillInfo) {
     const info = skillInfo || (activeChat && activeChat.skill) || null;
     const hasMessages = activeChat && activeChat.messages && activeChat.messages.length > 0;
@@ -812,6 +893,8 @@
     pendingAttachments = [];
     renderPending();
     haptic(6);
+
+    if (text) scheduleAIReply(text);
   }
 
   if (chatSendBtn) chatSendBtn.addEventListener("click", sendChatMessage);

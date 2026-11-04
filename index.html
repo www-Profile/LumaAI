@@ -27,8 +27,7 @@
       <button class="icon-btn" id="historyBtn" aria-label="Chat history">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
              stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"></circle>
-          <polyline points="12 7 12 12 15.5 14"></polyline>
+          <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 21l1.9-4.2A8.4 8.4 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5z"></path>
         </svg>
       </button>
 
@@ -151,8 +150,7 @@
       <button class="icon-btn" id="chatHistoryBtn" aria-label="Chat history">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
              stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"></circle>
-          <polyline points="12 7 12 12 15.5 14"></polyline>
+          <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 21l1.9-4.2A8.4 8.4 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5z"></path>
         </svg>
       </button>
 
@@ -376,24 +374,34 @@
       </div>
 
       <h2 class="sheet__title" id="premiumTitle">LumaAI Premium</h2>
-      <p class="sheet__subtitle">Unlock the full power of your assistant.</p>
+      <p class="sheet__subtitle">Choose the plan that fits you.</p>
 
-      <ul class="sheet__list">
-        <li class="sheet__item">
-          <span class="sheet__check">✓</span> Unlimited image generation
-        </li>
-        <li class="sheet__item">
-          <span class="sheet__check">✓</span> Priority voice assistant
-        </li>
-        <li class="sheet__item">
-          <span class="sheet__check">✓</span> Advanced document scanning
-        </li>
-        <li class="sheet__item">
-          <span class="sheet__check">✓</span> Faster translations
-        </li>
-      </ul>
+      <div class="premium-plans" id="premiumPlans">
+        <button class="premium-plan" data-plan="pro" type="button">
+          <span class="premium-plan__badge">Popular</span>
+          <span class="premium-plan__name">Pro</span>
+          <span class="premium-plan__price">$9.99<em>/mo</em></span>
+          <span class="premium-plan__features">
+            <span class="premium-plan__feature">Unlimited images</span>
+            <span class="premium-plan__feature">Priority voice</span>
+            <span class="premium-plan__feature">Advanced scanning</span>
+          </span>
+        </button>
 
-      <button class="primary-btn" id="premiumSubscribe">Continue</button>
+        <button class="premium-plan is-active" data-plan="boss" type="button">
+          <span class="premium-plan__badge premium-plan__badge--value">Best Value</span>
+          <span class="premium-plan__name">Boss</span>
+          <span class="premium-plan__price">$19.99<em>/mo</em></span>
+          <span class="premium-plan__features">
+            <span class="premium-plan__feature">Everything in Pro</span>
+            <span class="premium-plan__feature">Faster translations</span>
+            <span class="premium-plan__feature">Early access</span>
+          </span>
+        </button>
+      </div>
+
+      <button class="primary-btn" id="premiumSubscribe">Continue with Boss</button>
+      <p class="premium-fine">Cancel anytime · No commitment</p>
     </div>
   </section>
 
