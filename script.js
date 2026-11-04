@@ -5,6 +5,21 @@
 (function () {
   "use strict";
 
+    /* ============ ПРЕДЗАГРУЗКА ИКОНОК НАВЫКОВ ============ */
+  (function preloadSkillImages() {
+    const paths = [
+      "images/skill-hello.png",
+      "images/skill-image.png",
+      "images/skill-voice.png",
+      "images/skill-document.png",
+      "images/skill-translation.png"
+    ];
+    paths.forEach(function (src) {
+      const img = new Image();
+      img.src = src;
+    });
+  })();
+
     const IMAGE_GEN_DURATION = 5000;
 
   /* ============ VISUAL VIEWPORT (keyboard fix) ============ */
@@ -388,20 +403,19 @@
   const DEFAULT_PROMPT = "How can I help you today?";
 
   function setEmptyState(info) {
-    const emojiEl = chatEmpty.querySelector(".chat-empty__emoji");
-    const textEl  = chatEmpty.querySelector(".chat-empty__text");
-    if (!emojiEl || !textEl) return;
+    const emojiEl = chatEmpty && chatEmpty.querySelector(".chat-empty__emoji");
+    const textEl  = chatEmpty && chatEmpty.querySelector(".chat-empty__text");
+    if (!textEl) return;                    /* нет — молча выходим */
+    if (!emojiEl) { textEl.textContent = (info && info.prompt) || DEFAULT_PROMPT; return; }
 
-    /* Сбрасываем на дефолт: сначала пробуем картинку, потом эмодзи */
+    /* Сброс на дефолт */
     emojiEl.innerHTML = "";
     if (DEFAULT_ICON) {
       const defImg = document.createElement("img");
       defImg.src = DEFAULT_ICON;
       defImg.alt = "";
       defImg.className = "chat-empty__icon";
-      defImg.onerror = function () {
-        emojiEl.innerHTML = DEFAULT_EMOJI;
-      };
+      defImg.onerror = function () { emojiEl.textContent = DEFAULT_EMOJI; };
       emojiEl.appendChild(defImg);
     } else {
       emojiEl.textContent = DEFAULT_EMOJI;
@@ -416,6 +430,7 @@
       img.src = info.img;
       img.alt = "";
       img.className = "chat-empty__icon";
+      img.onerror = function () { emojiEl.textContent = info.emoji || DEFAULT_EMOJI; };
       emojiEl.appendChild(img);
     } else if (info.emoji) {
       emojiEl.textContent = info.emoji;
