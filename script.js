@@ -266,6 +266,27 @@
     });
   }
 
+    const settingsResetBtn = document.getElementById("settingsResetBtn");
+  const settingsCloseBtn = document.getElementById("settingsCloseBtn");
+
+  if (settingsResetBtn) {
+    settingsResetBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      settings = Object.assign({}, DEFAULT_SETTINGS);
+      saveSettings();
+      applySettings();
+      haptic(8);
+      showToast("Settings reset");
+    });
+  }
+
+  if (settingsCloseBtn && settingsAPI) {
+    settingsCloseBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      settingsAPI.close();
+    });
+  }
+
   document.querySelectorAll(".settings-row--button").forEach(function (row) {
     row.addEventListener("click", function () {
       showToast(row.dataset.setting + " — coming soon");
@@ -437,9 +458,11 @@
   const chatSendBtn   = document.getElementById("chatSendBtn");
   const chatEmojiBtn  = document.getElementById("chatEmojiBtn");
   const chatAttachBtn = document.getElementById("chatAttachBtn");
-    const chatHashBtn = document.getElementById("chatHashBtn");
+  const chatHashBtn = document.getElementById("chatHashBtn");
   const chatAttachBtnVoice = document.getElementById("chatAttachBtnVoice");
   const newChatBtn    = document.getElementById("newChatBtn");
+  const chatStatus       = document.getElementById("chatStatus");
+  const chatStatusAction = document.getElementById("chatStatusAction");
 
   const chatPending      = document.getElementById("chatPending");
   const chatSendBtnExtra = document.getElementById("chatSendBtnExtra");
@@ -727,6 +750,11 @@
       }
 
       chatMessages.appendChild(b);
+
+      /* Панель действий для текстовых ответов ИИ */
+      if (m.role === "assistant" && !m.type && m.text) {
+        attachAIActions(b, m.text);
+      }
     });
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
@@ -854,6 +882,7 @@
         activeChat.messages.push({ role: "assistant", text: text, at: Date.now() });
         activeChat.updatedAt = Date.now();
         commitActiveChat();
+        attachAIActions(b, text);
       }
     }, speed);
   }
@@ -861,6 +890,8 @@
   function scheduleAIReply(userText) {
     if (!activeChat) return;
     const chatId = activeChat.id;
+
+    setChatStatusTemporary("Thinking…");
 
     setTimeout(function () {
       if (!activeChat || activeChat.id !== chatId) return;
@@ -872,6 +903,7 @@
       setTimeout(function () {
         if (!activeChat || activeChat.id !== chatId) return;
         if (!typingEl.isConnected) return;
+        setChatStatusTemporary("Typing…");
         streamAIMessage(reply, typingEl);
         haptic(4);
       }, 700 + Math.random() * 600);
@@ -897,6 +929,9 @@
     setTimeout(function () {
       if (chatInput && chatInput.offsetParent !== null) chatInput.focus();
     }, 360);
+
+        const st = getStatusForMode();
+    setChatStatus(st.text, st.active);
 
     haptic(8);
   }
@@ -1171,7 +1206,7 @@
       btn.innerHTML =
         '<span class="skill-item__tag">' + skill.tag + '</span>' +
         '<span class="skill-item__desc">' + skill.prompt + '</span>';
-      btn.addEventListener("click", function () { applySkill(skill.tag, btn); });
+      btn.addEventListener("click", function () { applySkill(skill.tag); });
       skillList.appendChild(btn);
     });
 
@@ -1185,7 +1220,7 @@
     openPopup("skillPicker");
   }
 
-  function applySkill(tag, sourceEl) {
+  function applySkill(tag) {
     if (!chatInput) return;
     const val = chatInput.value;
     const cursor = chatInput.selectionStart || val.length;
@@ -1204,35 +1239,6 @@
     chatInput.style.height = "auto";
     chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + "px";
     closeAllPopups();
-
-    /* FLIP: летим из пикера в строку чипов */
-    if (sourceEl) {
-      requestAnimationFrame(function () {
-        const chip =
-          document.querySelector("#chatSkillsVoice .chat-skill-tag") ||
-          document.querySelector("#chatSkills .chat-skill-tag");
-        if (chip) flipChip(sourceEl, chip);
-      });
-    }
-  }
-
-  function flipChip(fromEl, toEl) {
-    const first = fromEl.getBoundingClientRect();
-    const last  = toEl.getBoundingClientRect();
-    if (!first.width || !last.width) return;
-
-    const dx = first.left - last.left;
-    const dy = first.top  - last.top;
-    const sx = first.width / last.width;
-    const sy = first.height / last.height;
-
-    toEl.animate([
-      { transform: "translate(" + dx + "px," + dy + "px) scale(" + sx + "," + sy + ")", opacity: 0.4 },
-      { transform: "translate(0,0) scale(1)", opacity: 1 }
-    ], {
-      duration: 420,
-      easing: "cubic-bezier(0.22, 1.4, 0.36, 1)"
-    });
   }
 
   /* ---------- Detecting # on input ---------- */
@@ -1386,21 +1392,28 @@
 
   /* ============ PERSISTENT SKILL CHIPS ============ */
   function renderSkills() {
-    if (chatComposer) {
-      const skills = (activeChat && activeChat.skills) || [];
-      const hasVoice = skills.indexOf("#Voice") !== -1;
-      const hasDoc   = skills.indexOf("#Document") !== -1;
-      const hasImage = skills.indexOf("#Image") !== -1;
-      const hasTranslate = skills.indexOf("#Translation") !== -1;
+    if (!chatComposer) return;
 
-      chatComposer.classList.toggle("is-voice",     hasVoice);
-      chatComposer.classList.toggle("is-document",  !hasVoice && hasDoc);
-      chatComposer.classList.toggle("is-image",     !hasVoice && !hasDoc && hasImage);
-      chatComposer.classList.toggle("is-translate", !hasVoice && !hasDoc && !hasImage && hasTranslate);
+    const canAnimate =
+      chatScreen &&
+      chatScreen.classList.contains("is-open") &&
+      !chatComposer.classList.contains("is-morphing");
+    const startH = canAnimate ? chatComposer.offsetHeight : 0;
 
-      if (imageOptions) imageOptions.hidden = !hasImage;
-      if (translatePanel) translatePanel.hidden = !hasTranslate;
-    }
+    const skills = (activeChat && activeChat.skills) || [];
+    const hasVoice     = skills.indexOf("#Voice") !== -1;
+    const hasDoc       = skills.indexOf("#Document") !== -1;
+    const hasImage     = skills.indexOf("#Image") !== -1;
+    const hasTranslate = skills.indexOf("#Translation") !== -1;
+
+    chatComposer.classList.toggle("is-voice",     hasVoice);
+    chatComposer.classList.toggle("is-document",  !hasVoice && hasDoc);
+    chatComposer.classList.toggle("is-image",     !hasVoice && !hasDoc && hasImage);
+    chatComposer.classList.toggle("is-translate", !hasVoice && !hasDoc && !hasImage && hasTranslate);
+
+    if (imageOptions) imageOptions.hidden = !hasImage;
+    if (translatePanel) translatePanel.hidden = !hasTranslate;
+
     renderImageOptions();
     renderTranslatePanel();
 
@@ -1408,8 +1421,6 @@
       document.getElementById("chatSkills"),
       document.getElementById("chatSkillsVoice")
     ].filter(Boolean);
-
-    const skills = (activeChat && activeChat.skills) || [];
 
     containers.forEach(function (container) {
       container.innerHTML = "";
@@ -1438,6 +1449,28 @@
         container.appendChild(chip);
       });
     });
+
+    /* Плавный морфинг высоты при смене навыка */
+    if (!canAnimate) return;
+    const endH = chatComposer.offsetHeight;
+    if (Math.abs(endH - startH) < 1) return;
+
+    chatComposer.classList.add("is-morphing");
+    chatComposer.style.height = startH + "px";
+    chatComposer.style.transition = "none";
+    void chatComposer.offsetHeight;                 /* reflow */
+    chatComposer.style.transition = "height 0.32s cubic-bezier(0.22, 1, 0.36, 1)";
+    chatComposer.style.height = endH + "px";
+
+    setTimeout(function () {
+      chatComposer.classList.remove("is-morphing");
+      chatComposer.style.height = "";
+      chatComposer.style.transition = "";
+    }, 340);
+
+    /* Статус по режиму */
+    const st = getStatusForMode();
+    setChatStatus(st.text, st.active);
   }
 
   function addSkill(tag) {
@@ -1713,6 +1746,8 @@
       renderHistory();
       haptic(8);
 
+      setChatStatusTemporary("Generating…");
+
       /* Через 2.5 сек — «готово» */
       setTimeout(function () {
         msg.status = "ready";
@@ -1880,6 +1915,8 @@
       renderActiveMessages();
       renderHistory();
       haptic(8);
+
+      setChatStatusTemporary("Translating…");
     });
   }
 
@@ -1895,5 +1932,171 @@
       togglePopup("skillPicker");
       openSkillPicker("");
     });
+  }
+
+    /* ============ AI MESSAGE ACTIONS (copy / like / dislike / speak / share) ============ */
+  function attachAIActions(bubbleEl, text) {
+    if (!bubbleEl || bubbleEl.querySelector(".chat-bubble__actions")) return;
+
+    const actions = document.createElement("div");
+    actions.className = "chat-bubble__actions";
+
+    /* --- Copy --- */
+    const copyBtn = makeAIActionBtn(
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+      "Copy"
+    );
+    copyBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      copyText(text);
+      flashActionBtn(copyBtn, "Copied");
+      haptic(6);
+    });
+    actions.appendChild(copyBtn);
+
+    /* --- Like --- */
+    const likeBtn = makeAIActionBtn(
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>',
+      "Like"
+    );
+    likeBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const disliked = actions.querySelector('[data-action="dislike"]');
+      if (disliked) disliked.classList.remove("is-active");
+      likeBtn.classList.toggle("is-active");
+      haptic(6);
+    });
+    likeBtn.dataset.action = "like";
+    actions.appendChild(likeBtn);
+
+    /* --- Dislike --- */
+    const dislikeBtn = makeAIActionBtn(
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>',
+      "Dislike"
+    );
+    dislikeBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const liked = actions.querySelector('[data-action="like"]');
+      if (liked) liked.classList.remove("is-active");
+      dislikeBtn.classList.toggle("is-active");
+      haptic(6);
+    });
+    dislikeBtn.dataset.action = "dislike";
+    actions.appendChild(dislikeBtn);
+
+    /* --- Speak --- */
+    const speakBtn = makeAIActionBtn(
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>',
+      "Speak"
+    );
+    speakBtn.dataset.action = "speak";
+    speakBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (!("speechSynthesis" in window)) {
+        showToast("Speech not supported");
+        return;
+      }
+      if (speakBtn.classList.contains("is-active")) {
+        window.speechSynthesis.cancel();
+        speakBtn.classList.remove("is-active");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 1;
+      utter.pitch = 1;
+      utter.onend = function () { speakBtn.classList.remove("is-active"); };
+      utter.onerror = function () { speakBtn.classList.remove("is-active"); };
+      window.speechSynthesis.speak(utter);
+      speakBtn.classList.add("is-active");
+      haptic(6);
+    });
+    actions.appendChild(speakBtn);
+
+    /* --- Share --- */
+    const shareBtn = makeAIActionBtn(
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>',
+      "Share"
+    );
+    shareBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (navigator.share) {
+        navigator.share({ text: text }).catch(function () {});
+      } else {
+        copyText(text);
+        flashActionBtn(shareBtn, "Copied");
+      }
+      haptic(6);
+    });
+    actions.appendChild(shareBtn);
+
+    bubbleEl.appendChild(actions);
+  }
+
+  function makeAIActionBtn(svg, label) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "chat-action-btn";
+    btn.setAttribute("aria-label", label);
+    btn.innerHTML = svg;
+    return btn;
+  }
+
+  function flashActionBtn(btn, label) {
+    const prev = btn.getAttribute("aria-label");
+    btn.setAttribute("aria-label", label);
+    btn.classList.add("is-success");
+    setTimeout(function () {
+      btn.classList.remove("is-success");
+      btn.setAttribute("aria-label", prev);
+    }, 1200);
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(function () {
+        fallbackCopy(text);
+      });
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+    /* ============ CHAT STATUS ============ */
+  let statusTimer = null;
+
+  function setChatStatus(text, isActive) {
+    if (!chatStatus || !chatStatusAction) return;
+    if (statusTimer) { clearTimeout(statusTimer); statusTimer = null; }
+
+    chatStatusAction.textContent = text || "Online";
+    chatStatus.classList.toggle("is-active", !!isActive);
+  }
+
+  function setChatStatusTemporary(text) {
+    setChatStatus(text, true);
+    statusTimer = setTimeout(function () {
+      setChatStatus("Online", false);
+    }, 2200);
+  }
+
+  function getStatusForMode() {
+    if (!chatComposer) return { text: "Online", active: false };
+    if (chatComposer.classList.contains("is-image"))     return { text: "Creating…",    active: true };
+    if (chatComposer.classList.contains("is-voice"))     return { text: "Listening…",   active: true };
+    if (chatComposer.classList.contains("is-document"))  return { text: "Scanning…",    active: true };
+    if (chatComposer.classList.contains("is-translate")) return { text: "Translating…", active: true };
+    return { text: "Online", active: false };
   }
 })();

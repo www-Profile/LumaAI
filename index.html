@@ -155,6 +155,11 @@
         </svg>
       </button>
 
+      <div class="chat-status" id="chatStatus">
+        <span class="chat-status__name">LumaAI</span>
+        <span class="chat-status__action" id="chatStatusAction">Online</span>
+      </div>
+
       <button class="icon-btn" id="chatExitBtn" aria-label="Back">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">
@@ -416,7 +421,26 @@
     </div>
 
     <div class="sheet__body">
-      <h2 class="sheet__title" id="settingsTitle">Settings</h2>
+
+      <div class="settings-head">
+        <button class="icon-btn icon-btn--dark" id="settingsResetBtn" aria-label="Reset settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+          </svg>
+        </button>
+
+        <h2 class="sheet__title settings-title" id="settingsTitle">Settings</h2>
+
+        <button class="icon-btn icon-btn--dark" id="settingsCloseBtn" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6"  y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
 
       <div class="settings-list">
 

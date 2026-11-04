@@ -163,6 +163,7 @@ button:focus-visible {
 
 .pill-btn {
   height: 44px;
+  min-width: 140px;
   padding: 0 clamp(16px, 5vw, 22px);
   border-radius: 22px;
   color: #fff;
@@ -772,7 +773,7 @@ button:focus-visible {
 .chat-bubble {
   align-self: flex-end;
   max-width: 80%;
-  padding: 6px;
+  padding: 6px 8px;
   border-radius: 12px 12px 2px 12px;
   background: color-mix(in srgb, var(--accent) 50%, #000);
   color: #fff;
@@ -826,7 +827,7 @@ button:focus-visible {
 /* ============ AI TEXT BUBBLE (left, gray) ============ */
 .chat-bubble--assistant {
   align-self: flex-start;
-  background: rgba(255, 255, 255, 0.08);
+  background: none;
   color: var(--text-primary);
   border-radius: 12px 12px 12px 4px;
   box-shadow: none;
@@ -1548,7 +1549,6 @@ button:focus-visible {
   gap: 10px;
   width: 100%;
   height: 44px;
-  margin: 4px 0 6px;
   padding: 0 14px;
   border-radius: 14px;
   background: var(--accent);
@@ -2469,4 +2469,158 @@ html[data-font-size="l"] { --fs-mult: 1.1; }
 @supports not (view-transition-name: none) {
   /* fallback: обычное открытие, без эффекта */
   .action-card { view-transition-name: none; }
+}
+
+
+/* ============ COMPOSER MORPH ============ */
+.chat-composer.is-morphing {
+  pointer-events: none;
+}
+
+/* ============ SETTINGS HEAD (две кнопки сверху) ============ */
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 6px 0 18px;
+}
+
+.settings-title {
+  margin: 0;
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+#settingsSheet .settings-list {
+  margin-top: 0;
+}
+
+/* ============ AI MESSAGE ACTIONS ============ */
+.chat-bubble__actions {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.chat-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.chat-action-btn svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.chat-action-btn:active {
+  transform: scale(0.9);
+}
+
+.chat-action-btn.is-active {
+  color: var(--accent);
+}
+
+.chat-action-btn.is-success {
+  color: var(--accent);
+}
+
+/* ============ CHAT STATUS PILL ============ */
+.chat-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  flex: 0 1 auto;
+  height: 44px;
+  min-width: 140px;
+  padding: 0 clamp(16px, 5vw, 22px);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+          backdrop-filter: blur(18px) saturate(180%);
+  color: #fff;
+  text-align: center;
+  overflow: hidden;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.chat-status__name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.chat-status__action {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  transition: color 0.25s ease;
+}
+
+/* Точка-индикатор перед действием */
+.chat-status__action::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: middle;
+  opacity: 0.7;
+}
+
+/* «Активное» состояние — акцент */
+.chat-status.is-active {
+  background: color-mix(in srgb, var(--accent) 18%, rgba(255, 255, 255, 0.02));
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.chat-status.is-active .chat-status__action {
+  color: var(--accent);
+}
+
+.chat-status.is-active .chat-status__action::before {
+  animation: statusBlink 1.1s ease-in-out infinite;
+}
+
+@keyframes statusBlink {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 1; }
+}
+
+/* В светлой теме */
+.theme-light .chat-status {
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #1d1d1f;
+}
+
+.theme-light .chat-status__name { color: #1d1d1f; }
+
+.theme-light .chat-status.is-active {
+  background: color-mix(in srgb, var(--accent) 14%, rgba(0, 0, 0, 0.02));
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
